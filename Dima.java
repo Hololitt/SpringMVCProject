@@ -1,7 +1,8 @@
 import java.io.*;
 import java.util.*;
+import java.util.List;
 
-// 24.02.2023
+// 25.02.2023
 public class Main {
     public static void main(String[] args) throws IOException{
         ArrayList<CoupleOfWords> list = new ArrayList<>();
@@ -13,15 +14,15 @@ public class Main {
         try {
             for (int i = 0; i < countOfWords; i++) {
                 System.out.print("Enter the word: ");
-                var word = validator(scanner.nextLine());
+                String word = validator(scanner.nextLine());
                 System.out.print("Enter the translation for to this word: ");
-                var translation = validator(scanner.nextLine());
+                String translation = validator(scanner.nextLine());
                 list.add(new CoupleOfWords(word, translation));
             }
         }catch(Exception e){
             e.printStackTrace();
         }
-
+        printInFile(list);
         while(!list.isEmpty()){
             CoupleOfWords coupleOfWords = list.get(random.nextInt(0, list.size()));
             coupleOfWords.check(list, coupleOfWords);
@@ -30,17 +31,30 @@ public class Main {
     }
     public static String validator(String word) throws Exception{
         if(word == null || word.equals("")){
-            throw new Exception();
+            throw new Exception("unknown type");
+        }else if(word.equals("finish")){
+            System.out.println("Program is finished");
+            System.exit(0);
         }
-        else
             return word;
+    }
+    public static void printInFile(List<CoupleOfWords> list) throws IOException {
+        var fileWriter = new FileWriter(
+                "C:\\Users\\holol\\Desktop\\IdeaProjects\\first\\src\\Training\\TrainingOfWords\\Words.txt");
+        StringBuilder sb = new StringBuilder();
+        for(CoupleOfWords s : list){
+            sb.append(s).append(System.lineSeparator());
+        }
+        String b = sb.toString();
+        fileWriter.append(b);
+        fileWriter.close();
     }
 }
 class CoupleOfWords {
     public final String reset = "\u001B[0m";
     public final String green = "\u001B[32m";
     public final String red = "\u001B[31m";
-    public int counts = 1;
+    public int counts = 5;
     private final String word;
     private final String translation;
     public String toString(){
@@ -52,11 +66,22 @@ class CoupleOfWords {
     }
     public void check(ArrayList<CoupleOfWords> list, CoupleOfWords coupleOfWords) {
         var scanner = new Scanner(System.in);
-        System.out.println("write translation to word "+ translation);
-        if(Objects.equals(scanner.nextLine(), word)){
+        var random = new Random();
+        List<String> words = new ArrayList<>();
+        words.add(word);
+        words.add(translation);
+        int numberOfVariable = random.nextInt(0, words.size());
+        System.out.println("write translation to word "+ words.get(numberOfVariable));
+        words.remove(numberOfVariable);
+        String translationFromUser = scanner.nextLine();
+        if(translationFromUser.equals("finish")){
+            System.out.println("Program is finished");
+            System.exit(0);
+        }
+        if(translationFromUser.equals(words.get(0))){
             System.out.println(green+"True!"+reset);
             counts--;
-        }else{
+        }else {
             System.out.println(red+"False!"+reset);
             System.out.println("Write answer was "+word);
         }
