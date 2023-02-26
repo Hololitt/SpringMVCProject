@@ -59,6 +59,9 @@ class CoupleOfWords {
         this.word = word;
         this.translation = translation;
     }
+    public String toString(){
+        return word + " " + translation;
+    }
     public void check(ArrayList<CoupleOfWords> list, CoupleOfWords coupleOfWords) {
         var scanner = new Scanner(System.in);
         var random = new Random();
