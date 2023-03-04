@@ -23,7 +23,7 @@ public class Main {
     }
 }
 class CoupleOfWords {
-    private int counts = 5;
+    private int counts = 0;
     private String word;
     private String translation;
     private ArrayList<CoupleOfWords> list = new ArrayList<>();
@@ -37,9 +37,8 @@ class CoupleOfWords {
         this.translation = translation;
     }
     public void help(){
-        System.out.println("Enter <finish> to finish the program");
-        System.out.println("Enter <skip> to skip current word");
-        System.out.println("<ready> to start the training");
+        System.out.println("<finish> to finish the program");
+        System.out.println("<skip> to skip current word");
     }
     public void setWords(){
         var scanner = new Scanner(System.in);
@@ -128,15 +127,15 @@ class CoupleOfWords {
                 String reset = "\u001B[0m";
                 if(translationFromUser.equals(wordAndTranslation.get(0))){
                     String green = "\u001B[32m";
-                    System.out.println(green +"True!"+ reset);
-                    coupleOfWords.counts--;
-                }else {
                     coupleOfWords.counts++;
+                    System.out.println(green +"True     "+coupleOfWords.counts+"/5"+ reset);
+                }else {
+                    coupleOfWords.counts--;
                     String red = "\u001B[31m";
                     System.out.println(red+"False!"+ reset);
                     System.out.println("Write answer was "+wordAndTranslation.get(0));
                 }
-                if(coupleOfWords.counts == 0){
+                if(coupleOfWords.counts == 5){
                     list.remove(coupleOfWords);
                     System.out.println("You learned this word");
                 }
