@@ -1,9 +1,8 @@
-
 import java.io.*;
 import java.util.*;
 import java.util.List;
 
-// 2.03.2023
+// 4.03.2023
 public class Main {
     public static void main(String[] args) throws Exception {
         ArrayList<CoupleOfWords> list = new ArrayList<>();
@@ -15,13 +14,12 @@ public class Main {
         if(kindOfStart.equals("set")){
             coupleOfWords.setWords();
         }else if(kindOfStart.equals("file")){
-           coupleOfWords.setElementsFromFileToList();
+            coupleOfWords.setElementsFromFileToList();
         }else{
             throw new Exception();
         }
-       coupleOfWords.printInFile();
+        coupleOfWords.printInFile();
         coupleOfWords.startTraining();
-        System.out.println("Program is finished");
     }
 }
 class CoupleOfWords {
@@ -29,6 +27,7 @@ class CoupleOfWords {
     private String word;
     private String translation;
     private ArrayList<CoupleOfWords> list = new ArrayList<>();
+   private final Scanner scanner = new Scanner(System.in);
     private final String filePath = "C:\\Users\\holol\\Desktop\\IdeaProjects\\first\\src\\Training\\TrainingOfWords\\Words.txt";
     public CoupleOfWords(ArrayList<CoupleOfWords> list) {
         this.list = list;
@@ -91,26 +90,29 @@ class CoupleOfWords {
             list.add(new CoupleOfWords(validator(scanner.nextLine()), validator(scanner.nextLine())));
         }
     }
-public void startTraining() {
+    public void startTraining() {
         var random = new Random();
-    while(!list.isEmpty()){
-        var coupleOfWords = list.get(random.nextInt(0, list.size()));
-        coupleOfWords.check(coupleOfWords);
+        while(!list.isEmpty()){
+            var coupleOfWords = list.get(random.nextInt(0, list.size()));
+           check(coupleOfWords);
+        }
+        System.out.println("Program is finished");
     }
-}
     public String toString(){
         return word + " " + translation;
     }
     public void check(CoupleOfWords coupleOfWords) {
-        var scanner = new Scanner(System.in);
         var random = new Random();
         List<String> wordAndTranslation = new ArrayList<>();
-        wordAndTranslation.add(word);
-        wordAndTranslation.add(translation);
+        wordAndTranslation.add(coupleOfWords.word);
+        wordAndTranslation.add(coupleOfWords.translation);
         int numberOfVariable = random.nextInt(0, wordAndTranslation.size());
         System.out.println("write translation to word "+ wordAndTranslation.get(numberOfVariable));
         wordAndTranslation.remove(numberOfVariable);
         String translationFromUser = scanner.nextLine();
+       checkTranslationFromUser(translationFromUser, coupleOfWords, wordAndTranslation);
+    }
+    private void checkTranslationFromUser(String translationFromUser, CoupleOfWords coupleOfWords, List<String> wordAndTranslation){
         switch(translationFromUser){
             case "finish" -> {
                 System.out.println("Program is finished");
@@ -118,19 +120,23 @@ public void startTraining() {
             }case "skip" -> {
                 System.out.println("This word was skipped");
                 list.remove(coupleOfWords);
-            }case "help" -> help();
+            }case "help" -> {
+                help();
+                checkTranslationFromUser(scanner.nextLine(), coupleOfWords, wordAndTranslation);
+            }
             default -> {
                 String reset = "\u001B[0m";
                 if(translationFromUser.equals(wordAndTranslation.get(0))){
                     String green = "\u001B[32m";
                     System.out.println(green +"True!"+ reset);
-                    counts--;
+                    coupleOfWords.counts--;
                 }else {
+                    coupleOfWords.counts++;
                     String red = "\u001B[31m";
                     System.out.println(red+"False!"+ reset);
                     System.out.println("Write answer was "+wordAndTranslation.get(0));
                 }
-                if(counts == 0){
+                if(coupleOfWords.counts == 0){
                     list.remove(coupleOfWords);
                     System.out.println("You learned this word");
                 }
