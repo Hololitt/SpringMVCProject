@@ -1,8 +1,8 @@
-import java.io.*;
+mport java.io.*;
 import java.util.*;
 import java.util.List;
 
-// 4.03.2023
+// 5.03.2023
 public class Main {
     public static void main(String[] args) throws Exception {
         ArrayList<CoupleOfWords> list = new ArrayList<>();
@@ -26,6 +26,7 @@ class CoupleOfWords {
     private int counts = 0;
     private String word;
     private String translation;
+    private int countOfErrors;
     private ArrayList<CoupleOfWords> list = new ArrayList<>();
    private final Scanner scanner = new Scanner(System.in);
     private final String filePath = "C:\\Users\\holol\\Desktop\\IdeaProjects\\first\\src\\Training\\TrainingOfWords\\Words.txt";
@@ -37,8 +38,9 @@ class CoupleOfWords {
         this.translation = translation;
     }
     public void help(){
-        System.out.println("<finish> to finish the program");
+        System.out.println(yellow + "<finish> to finish the program");
         System.out.println("<skip> to skip current word");
+        System.out.println("<info> show info" + reset);
     }
     public void setWords(){
         var scanner = new Scanner(System.in);
@@ -53,11 +55,8 @@ class CoupleOfWords {
                 String translation = validator(scanner.nextLine());
                 if(translation.equals("ready"))
                     break;
-                if(translation.equals("help")){
-                    help();
-                }else{
+                    else
                     list.add(new CoupleOfWords(word, translation));
-                }
             }
         }catch(Exception e){
             e.printStackTrace();
@@ -67,8 +66,7 @@ class CoupleOfWords {
         if(word.equals("")){
             throw new Exception("unknown type");
         }else if(word.equals("finish")){
-            System.out.println("Program is finished");
-            System.exit(0);
+          finishTheTraining();
         }
         return word;
     }
@@ -95,10 +93,11 @@ class CoupleOfWords {
             var coupleOfWords = list.get(random.nextInt(0, list.size()));
            check(coupleOfWords);
         }
-        System.out.println("Program is finished");
+        finishTheTraining();
     }
-    public String toString(){
-        return word + " " + translation;
+
+    public String getInfoOfObject(){
+        return word + " - " + translation + " | " + counts + "/5 " + " to end with this word";
     }
     public void check(CoupleOfWords coupleOfWords) {
         var random = new Random();
@@ -111,26 +110,44 @@ class CoupleOfWords {
         String translationFromUser = scanner.nextLine();
        checkTranslationFromUser(translationFromUser, coupleOfWords, wordAndTranslation);
     }
+    public void info(){
+        StringBuilder sb = new StringBuilder();
+        for(var info : list){
+            sb.append(info.getInfoOfObject()).append(System.lineSeparator());
+        }
+        System.out.println(yellow + sb + reset);
+    }
+    private final String yellow = "\u001B[33m";
+    private final String reset = "\u001B[0m";
+    private void finishTheTraining(){
+        System.out.println("Training is finished");
+        System.out.println("You did "+countOfErrors+" errors!");
+        System.exit(0);
+    }
     private void checkTranslationFromUser(String translationFromUser, CoupleOfWords coupleOfWords, List<String> wordAndTranslation){
         switch(translationFromUser){
-            case "finish" -> {
-                System.out.println("Program is finished");
-                System.exit(0);
-            }case "skip" -> {
+            case "finish" -> finishTheTraining();
+            case "skip" -> {
                 System.out.println("This word was skipped");
                 list.remove(coupleOfWords);
             }case "help" -> {
                 help();
                 checkTranslationFromUser(scanner.nextLine(), coupleOfWords, wordAndTranslation);
             }
+            case "info" -> {
+                info();
+                checkTranslationFromUser(scanner.nextLine(), coupleOfWords, wordAndTranslation);
+            }
             default -> {
-                String reset = "\u001B[0m";
                 if(translationFromUser.equals(wordAndTranslation.get(0))){
                     String green = "\u001B[32m";
                     coupleOfWords.counts++;
                     System.out.println(green +"True     "+coupleOfWords.counts+"/5"+ reset);
                 }else {
-                    coupleOfWords.counts--;
+                    if(coupleOfWords.counts > -5){
+                        coupleOfWords.counts--;
+                    }
+                    coupleOfWords.countOfErrors++;
                     String red = "\u001B[31m";
                     System.out.println(red+"False!"+ reset);
                     System.out.println("Write answer was "+wordAndTranslation.get(0));
