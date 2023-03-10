@@ -1,14 +1,13 @@
-
 import java.io.*;
 import java.util.*;
 import java.util.List;
 
-// 5.03.2023
+// 10.03.2023
 public class Main {
     public static void main(String[] args) throws Exception {
         ArrayList<CoupleOfWords> list = new ArrayList<>();
         CoupleOfWords coupleOfWords = new CoupleOfWords(list);
-        
+
         coupleOfWords.setKindOfStart();
         coupleOfWords.printInFile();
         coupleOfWords.startTraining();
@@ -71,11 +70,15 @@ class CoupleOfWords {
             e.printStackTrace();
         }
     }
-    public String validator(String word) throws Exception{
-        if(word.equals("")){
-            throw new Exception("unknown type");
-        }else if(word.equals("finish")){
-            finishTheTraining();
+    public String validator(String word) {
+        try{
+            if(word.equals("")){
+                throw new Exception("unknown type");
+            }else if(word.equals("finish")){
+                finishTheTraining();
+            }
+        }catch(Exception e){
+            e.printStackTrace();
         }
         return word;
     }
@@ -83,8 +86,7 @@ class CoupleOfWords {
         var fileWriter = new FileWriter(filePath);
         StringBuilder sb = new StringBuilder();
         for (var indexOfObject : list) {
-            sb.append(indexOfObject.word).append(System.lineSeparator());
-            sb.append(indexOfObject.translation).append(System.lineSeparator());
+            sb.append(indexOfObject.word).append(" - ").append(indexOfObject.translation).append(System.lineSeparator());
         }
         fileWriter.write(sb.toString());
         fileWriter.close();
@@ -93,7 +95,14 @@ class CoupleOfWords {
         var file = new File(filePath);
         var scanner = new Scanner(file);
         while(scanner.hasNextLine()){
-            list.add(new CoupleOfWords(validator(scanner.nextLine()), validator(scanner.nextLine())));
+            var sentence = scanner.nextLine();
+            String word, translation;
+            word = sentence.substring(sentence.lastIndexOf("-")+2);
+
+            sentence = sentence.replace(word, "");
+            translation = sentence.replace(" - ", "");
+
+            list.add(new CoupleOfWords(validator(word), validator(translation)));
         }
     }
     public void startTraining() {
