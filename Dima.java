@@ -1,8 +1,10 @@
+
 import java.io.*;
 import java.util.*;
 import java.util.List;
-
-// 10.03.2023
+import java.time.Instant;
+import java.time.Duration;
+// 11.03.2023
 public class Main {
     public static void main(String[] args) throws Exception {
         ArrayList<CoupleOfWords> list = new ArrayList<>();
@@ -18,6 +20,7 @@ class CoupleOfWords {
     private String word;
     private String translation;
     private int countOfErrors;
+    private long totalTime;
     private ArrayList<CoupleOfWords> list = new ArrayList<>();
     private final Scanner scanner = new Scanner(System.in);
     private final String filePath = "C:\\Users\\holol\\Desktop\\IdeaProjects\\first\\src\\Training\\TrainingOfWords\\Words.txt";
@@ -107,10 +110,13 @@ class CoupleOfWords {
     }
     public void startTraining() {
         var random = new Random();
+        Instant start = Instant.now();
         while(!list.isEmpty()){
             var coupleOfWords = list.get(random.nextInt(0, list.size()));
             check(coupleOfWords);
         }
+        Instant finish = Instant.now();
+         totalTime = Duration.between(start, finish).toSeconds();
         finishTheTraining();
     }
     public String getInfoOfObject(){
@@ -139,6 +145,7 @@ class CoupleOfWords {
     private void finishTheTraining(){
         System.out.println("Training is finished");
         System.out.println("You did "+countOfErrors+" errors!");
+        System.out.println("You learned words for " + totalTime + " seconds");
         System.exit(0);
     }
     private void checkTranslationFromUser(String translationFromUser, CoupleOfWords coupleOfWords, List<String> wordAndTranslation){
