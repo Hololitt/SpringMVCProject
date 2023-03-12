@@ -2,16 +2,20 @@
 import java.io.*;
 import java.util.*;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import java.time.Instant;
 import java.time.Duration;
-// 11.03.2023
+// 12.03.2023
 public class Main {
     public static void main(String[] args) throws Exception {
         ArrayList<CoupleOfWords> list = new ArrayList<>();
         CoupleOfWords coupleOfWords = new CoupleOfWords(list);
+BaseOfWords baseOfWords = new BaseOfWords(list);
 
         coupleOfWords.setKindOfStart();
         coupleOfWords.printInFile();
+        baseOfWords.printLearnedWordInBase();
         coupleOfWords.startTraining();
     }
 }
@@ -31,17 +35,27 @@ class CoupleOfWords {
         this.word = word;
         this.translation = translation;
     }
+    public String toString(){
+        return word + " - " + translation;
+    }
+    public String getWord(){
+        return word;
+    }
     public void setKindOfStart() throws Exception {
         System.out.println("Set the word by yourself, or copy from file?");
-        System.out.println("Enter: set/file");
+        System.out.println("Enter: set/file or <repeat> to repeat all learned word");
         String kindOfStart = scanner.nextLine();
         switch(kindOfStart){
             case "set" -> setWords();
-            case "file" -> setElementsFromFileToList();
+            case "file" -> setElementsFromFileToList(filePath);
             case "help" -> {
                 help();
                 setKindOfStart();
-            }default -> {
+            }case "repeat" -> {
+                var baseOfWords = new BaseOfWords(list);
+                setElementsFromFileToList(baseOfWords.getFilePath());
+            }
+            default -> {
                 System.out.println("Unknown value");
                 setKindOfStart();
             }
@@ -52,7 +66,6 @@ class CoupleOfWords {
         System.out.println("<skip> to skip current word");
         System.out.println("<info> show info" + reset);
     }
-
     public void setWords(){
         var scanner = new Scanner(System.in);
         System.out.println("Enter your words for learning");
@@ -73,7 +86,7 @@ class CoupleOfWords {
             e.printStackTrace();
         }
     }
-    public String validator(String word) {
+    private String validator(String word) {
         try{
             if(word.equals("")){
                 throw new Exception("unknown type");
@@ -94,7 +107,8 @@ class CoupleOfWords {
         fileWriter.write(sb.toString());
         fileWriter.close();
     }
-    public void setElementsFromFileToList() throws Exception {
+
+    public void setElementsFromFileToList(String filePath) throws Exception {
         var file = new File(filePath);
         var scanner = new Scanner(file);
         while(scanner.hasNextLine()){
@@ -116,7 +130,7 @@ class CoupleOfWords {
             check(coupleOfWords);
         }
         Instant finish = Instant.now();
-         totalTime = Duration.between(start, finish).toSeconds();
+        totalTime = Duration.between(start, finish).toSeconds();
         finishTheTraining();
     }
     public String getInfoOfObject(){
@@ -182,5 +196,35 @@ class CoupleOfWords {
                 }
             }
         }
+    }
+}
+class BaseOfWords {
+    private final ArrayList<CoupleOfWords> list;
+    private final File file = new File(
+            "C:\\Users\\holol\\Desktop\\IdeaProjects\\first\\src\\AdvancedJava\\Patterns\\ListOfLearnedWords.txt");
+    public String getFilePath(){
+        return file.getPath();
+    }
+    BaseOfWords(ArrayList<CoupleOfWords> list){
+        this.list = list;
+    }
+    public void printLearnedWordInBase() throws IOException {
+        for(var l : list){
+            if(!checkSameWordInBase(l.getWord())){
+                PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file, true)));
+                out.println(l);
+                out.close();
+            }
+        }
+    }
+    private boolean checkSameWordInBase(String wordForCheck) throws IOException{
+        var scanner = new Scanner(file);
+        var text = new StringBuilder();
+        while(scanner.hasNextLine()){
+            text.append(scanner.nextLine()).append(System.lineSeparator());
+        }
+        var pattern = Pattern.compile(wordForCheck);
+        Matcher matcher = pattern.matcher(text);
+        return matcher.find();
     }
 }
