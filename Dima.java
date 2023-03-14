@@ -24,7 +24,7 @@ class CoupleOfWords {
     private String word;
     private String translation;
     private int countOfErrors;
-    private long totalTime;
+    private String totalTime;
     private ArrayList<CoupleOfWords> list = new ArrayList<>();
     private final Scanner scanner = new Scanner(System.in);
     private final String filePath = "C:\\Users\\holol\\Desktop\\IdeaProjects\\first\\src\\Training\\TrainingOfWords\\Words.txt";
@@ -130,8 +130,14 @@ class CoupleOfWords {
             check(coupleOfWords);
         }
         Instant finish = Instant.now();
-        totalTime = Duration.between(start, finish).toSeconds();
+       totalTime = totalTimeAndHisType(Duration.between(start, finish));
         finishTheTraining();
+    }
+    private String totalTimeAndHisType(Duration totalTime){
+       if(totalTime.toSeconds() > 120){
+           return totalTime.toMinutes() + " minutes";
+       }
+       else return totalTime.toSeconds() + " seconds";
     }
     public String getInfoOfObject(){
         return word + " - " + translation + " | " + counts + "/5 " + " to end with this word";
@@ -159,7 +165,7 @@ class CoupleOfWords {
     private void finishTheTraining(){
         System.out.println("Training is finished");
         System.out.println("You did "+countOfErrors+" errors!");
-        System.out.println("You learned words for " + totalTime + " seconds");
+        System.out.println("You learned these word in " + totalTime);
         System.exit(0);
     }
     private void checkTranslationFromUser(String translationFromUser, CoupleOfWords coupleOfWords, List<String> wordAndTranslation){
