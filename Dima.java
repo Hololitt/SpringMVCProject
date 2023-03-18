@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.time.Instant;
 import java.time.Duration;
-// 14.03.2023
+// 18.03.2023
 public class Main {
     public static void main(String[] args) throws Exception {
         ArrayList<CoupleOfWords> list = new ArrayList<>();
@@ -15,8 +15,8 @@ BaseOfWords baseOfWords = new BaseOfWords(list);
 
         coupleOfWords.setKindOfStart();
         coupleOfWords.printInFile();
-        baseOfWords.printLearnedWordInBase();
         coupleOfWords.startTraining();
+        baseOfWords.printLearnedWordInBase();
     }
 }
 class CoupleOfWords {
@@ -75,16 +75,27 @@ class CoupleOfWords {
                 String word = validator(scanner.nextLine());
                 if(word.equals("ready"))
                     break;
+                if(word.equals("check word in base")){
+                    checkWordInBase();
+                }
                 System.out.print("Enter the translation for to this word: ");
                 String translation = validator(scanner.nextLine());
                 if(translation.equals("ready"))
                     break;
+                if(translation.equals("check word in base")){
+                   checkWordInBase();
+                }
                 else
                     list.add(new CoupleOfWords(word, translation));
             }
         }catch(Exception e){
             e.printStackTrace();
         }
+    }
+    private void checkWordInBase() throws IOException {
+        System.out.println("Enter the word which you would to check");
+        var baseOfWords = new BaseOfWords(list);
+        System.out.println(baseOfWords.checkSameWordInBase(scanner.nextLine()));
     }
     private String validator(String word) {
         try{
@@ -165,7 +176,9 @@ class CoupleOfWords {
     private void finishTheTraining(){
         System.out.println("Training is finished");
         System.out.println("You did "+countOfErrors+" errors!");
-        System.out.println("You learned these word in " + totalTime);
+        if(!totalTime.isEmpty()){
+            System.out.println("You learned these words in " + totalTime);
+        }
         System.exit(0);
     }
     private void checkTranslationFromUser(String translationFromUser, CoupleOfWords coupleOfWords, List<String> wordAndTranslation){
@@ -223,7 +236,7 @@ class BaseOfWords {
             }
         }
     }
-    private boolean checkSameWordInBase(String wordForCheck) throws IOException{
+    public boolean checkSameWordInBase(String wordForCheck) throws IOException{
         var scanner = new Scanner(file);
         var text = new StringBuilder();
         while(scanner.hasNextLine()){
