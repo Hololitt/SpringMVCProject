@@ -6,17 +6,18 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.time.Instant;
 import java.time.Duration;
-// 18.03.2023
+// 16.04.2023
 public class Main {
     public static void main(String[] args) throws Exception {
         ArrayList<CoupleOfWords> list = new ArrayList<>();
         CoupleOfWords coupleOfWords = new CoupleOfWords(list);
-BaseOfWords baseOfWords = new BaseOfWords(list);
+        BaseOfWords baseOfWords = new BaseOfWords();
 
         coupleOfWords.setKindOfStart();
         coupleOfWords.printInFile();
         coupleOfWords.startTraining();
-        baseOfWords.printLearnedWordInBase();
+        baseOfWords.printLearnedWordInBase(coupleOfWords.getListOfLearnedWords());
+        coupleOfWords.finishTheTraining();
     }
 }
 class CoupleOfWords {
@@ -25,9 +26,10 @@ class CoupleOfWords {
     private String translation;
     private int countOfErrors;
     private String totalTime;
+    private final ArrayList<CoupleOfWords> listOfLearnedWords = new ArrayList<>();
     private ArrayList<CoupleOfWords> list = new ArrayList<>();
     private final Scanner scanner = new Scanner(System.in);
-    private final String filePath = "C:\\Users\\holol\\Desktop\\IdeaProjects\\first\\src\\Training\\TrainingOfWords\\Words.txt";
+    private final String filePath = "C:\\Users\\holol\\Desktop\\IdeaProjects\\first\\src\\Training\\TrainingOfWords\\LastWords.txt";
     public CoupleOfWords(ArrayList<CoupleOfWords> list) {
         this.list = list;
     }
@@ -41,30 +43,39 @@ class CoupleOfWords {
     public String getWord(){
         return word;
     }
-    public void setKindOfStart() throws Exception {
-        System.out.println("Set the word by yourself, or copy from file?");
-        System.out.println("Enter: set/file or <repeat> to repeat all learned word");
-        String kindOfStart = scanner.nextLine();
-        switch(kindOfStart){
-            case "set" -> setWords();
-            case "file" -> setElementsFromFileToList(filePath);
-            case "help" -> {
-                help();
-                setKindOfStart();
-            }case "repeat" -> {
-                var baseOfWords = new BaseOfWords(list);
-                setElementsFromFileToList(baseOfWords.getFilePath());
+    public ArrayList<CoupleOfWords> getListOfLearnedWords(){
+        return listOfLearnedWords;
+    }
+    public void setKindOfStart() {
+        try{
+            System.out.println("Set the word by yourself, or copy from file?");
+            System.out.println("Enter: set/file or <repeat> to repeat all learned word");
+            String kindOfStart = scanner.nextLine();
+            switch(kindOfStart){
+                case "set" -> setWords();
+                case "file" -> setElementsFromFileToList(filePath);
+                case "base" -> checkWordInBase();
+                case "help" -> {
+                    help();
+                    setKindOfStart();
+                }case "repeat" -> {
+                    var baseOfWords = new BaseOfWords();
+                    setElementsFromFileToList(baseOfWords.getFilePath());
+                }
+                default -> {
+                    System.out.println("Unknown value");
+                    setKindOfStart();
+                }
             }
-            default -> {
-                System.out.println("Unknown value");
-                setKindOfStart();
-            }
+        }catch(Exception e){
+            e.printStackTrace();
         }
     }
     private void help(){
         System.out.println(yellow + "<finish> to finish the program");
         System.out.println("<skip> to skip current word");
         System.out.println("<info> show info" + reset);
+        System.out.println("<base> check ");
     }
     public void setWords(){
         var scanner = new Scanner(System.in);
@@ -83,7 +94,7 @@ class CoupleOfWords {
                 if(translation.equals("ready"))
                     break;
                 if(translation.equals("check word in base")){
-                   checkWordInBase();
+                    checkWordInBase();
                 }
                 else
                     list.add(new CoupleOfWords(word, translation));
@@ -94,8 +105,17 @@ class CoupleOfWords {
     }
     private void checkWordInBase() throws IOException {
         System.out.println("Enter the word which you would to check");
-        var baseOfWords = new BaseOfWords(list);
-        System.out.println(baseOfWords.checkSameWordInBase(scanner.nextLine()));
+        var baseOfWords = new BaseOfWords();
+        while(true){
+            String wordForCheck = scanner.nextLine();
+            if(Objects.equals(wordForCheck, "stop")){
+                break;
+            }
+            else{
+                System.out.println(baseOfWords.checkSameWordInBase(wordForCheck));
+            }
+        }
+        setKindOfStart();
     }
     private String validator(String word) {
         try{
@@ -122,15 +142,20 @@ class CoupleOfWords {
     public void setElementsFromFileToList(String filePath) throws Exception {
         var file = new File(filePath);
         var scanner = new Scanner(file);
-        while(scanner.hasNextLine()){
-            var sentence = scanner.nextLine();
-            String word, translation;
-            word = sentence.substring(sentence.lastIndexOf("-")+2);
+        if(scanner.hasNextLine()){
+            while(scanner.hasNextLine()){
+                var sentence = scanner.nextLine();
+                String word, translation;
+                word = sentence.substring(sentence.lastIndexOf("-")+2);
 
-            sentence = sentence.replace(word, "");
-            translation = sentence.replace(" - ", "");
+                sentence = sentence.replace(word, "");
+                translation = sentence.replace(" - ", "");
 
-            list.add(new CoupleOfWords(validator(word), validator(translation)));
+                list.add(new CoupleOfWords(validator(word), validator(translation)));
+            }
+        }else{
+            System.out.println("This file is empty");
+            setKindOfStart();
         }
     }
     public void startTraining() {
@@ -141,14 +166,13 @@ class CoupleOfWords {
             check(coupleOfWords);
         }
         Instant finish = Instant.now();
-       totalTime = totalTimeAndHisType(Duration.between(start, finish));
-        finishTheTraining();
+        totalTime = totalTimeAndHisType(Duration.between(start, finish));
     }
     private String totalTimeAndHisType(Duration totalTime){
-       if(totalTime.toSeconds() > 120){
-           return totalTime.toMinutes() + " minutes";
-       }
-       else return totalTime.toSeconds() + " seconds";
+        if(totalTime.toSeconds() > 120){
+            return totalTime.toMinutes() + " minutes";
+        }
+        else return totalTime.toSeconds() + " seconds";
     }
     public String getInfoOfObject(){
         return word + " - " + translation + " | " + counts + "/5 " + " to end with this word";
@@ -173,10 +197,10 @@ class CoupleOfWords {
     }
     private final String yellow = "\u001B[33m";
     private final String reset = "\u001B[0m";
-    private void finishTheTraining(){
+    public void finishTheTraining(){
         System.out.println("Training is finished");
         System.out.println("You did "+countOfErrors+" errors!");
-        if(!totalTime.isEmpty()){
+        if(totalTime != null){
             System.out.println("You learned these words in " + totalTime);
         }
         System.exit(0);
@@ -211,6 +235,7 @@ class CoupleOfWords {
                 }
                 if(coupleOfWords.counts == 5){
                     list.remove(coupleOfWords);
+                    listOfLearnedWords.add(coupleOfWords);
                     System.out.println("You learned this word");
                 }
             }
@@ -218,17 +243,14 @@ class CoupleOfWords {
     }
 }
 class BaseOfWords {
-    private final ArrayList<CoupleOfWords> list;
     private final File file = new File(
-            "C:\\Users\\holol\\Desktop\\IdeaProjects\\first\\src\\AdvancedJava\\Patterns\\ListOfLearnedWords.txt");
+            "C:\\Users\\holol\\Desktop\\IdeaProjects\\first\\src\\Training\\TrainingOfWords\\LearnedWords.txt");
     public String getFilePath(){
         return file.getPath();
     }
-    BaseOfWords(ArrayList<CoupleOfWords> list){
-        this.list = list;
-    }
-    public void printLearnedWordInBase() throws IOException {
-        for(var l : list){
+
+    public void printLearnedWordInBase(ArrayList<CoupleOfWords> listOfLearnedWords) throws IOException {
+        for(var l : listOfLearnedWords){
             if(!checkSameWordInBase(l.getWord())){
                 PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file, true)));
                 out.println(l);
