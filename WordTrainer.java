@@ -8,7 +8,7 @@ import java.time.Duration;
 // 09.02.2024
 //You should create two files (one for last words and second for all learned words). Then switch my file pathes to your pathes.
 //first file path: line 31
-//second file path 237
+//second file path: line 237
 public class Main {
     public static void main(String[] args) throws Exception {
         CoupleOfWords coupleOfWords = new CoupleOfWords();
