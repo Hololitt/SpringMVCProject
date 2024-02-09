@@ -1,18 +1,18 @@
 
 import java.io.*;
 import java.util.*;
-import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.time.Instant;
 import java.time.Duration;
-// 16.04.2023
+// 09.02.2024
+//You should create two files (one for last words and second for all learned words). Then switch my file pathes to your pathes.
+//first file path: line 31
+//second file path 237
 public class Main {
     public static void main(String[] args) throws Exception {
-        ArrayList<CoupleOfWords> list = new ArrayList<>();
-        CoupleOfWords coupleOfWords = new CoupleOfWords(list);
+        CoupleOfWords coupleOfWords = new CoupleOfWords();
         BaseOfWords baseOfWords = new BaseOfWords();
-
         coupleOfWords.setKindOfStart();
         coupleOfWords.printInFile();
         coupleOfWords.startTraining();
@@ -25,24 +25,24 @@ class CoupleOfWords {
     private String word;
     private String translation;
     private int countOfErrors;
-    private String totalTime;
+    private String infoOfRunTime;
     private final ArrayList<CoupleOfWords> listOfLearnedWords = new ArrayList<>();
-    private ArrayList<CoupleOfWords> list = new ArrayList<>();
+    private final ArrayList<CoupleOfWords> listOfWordsForLearning = new ArrayList<>();
     private final Scanner scanner = new Scanner(System.in);
-    private final String filePath = "C:\\Users\\holol\\Desktop\\IdeaProjects\\first\\src\\Training\\TrainingOfWords\\LastWords.txt";
-    public CoupleOfWords(ArrayList<CoupleOfWords> list) {
-        this.list = list;
-    }
+    private final String filePath = "C:\\Users\\holol\\Desktop\\IdeaProjects\\first\\src\\Training\\TrainingOfWords\\LastWords.txt";   //your own path to file
+
     public CoupleOfWords(String word, String translation) {
         this.word = word;
         this.translation = translation;
     }
+    public CoupleOfWords(){}
     public String toString(){
         return word + " - " + translation;
     }
     public String getWord(){
         return word;
     }
+    public String getTranslation(){return translation;}
     public ArrayList<CoupleOfWords> getListOfLearnedWords(){
         return listOfLearnedWords;
     }
@@ -55,10 +55,7 @@ class CoupleOfWords {
                 case "set" -> setWords();
                 case "file" -> setElementsFromFileToList(filePath);
                 case "base" -> checkWordInBase();
-                case "help" -> {
-                    help();
-                    setKindOfStart();
-                }case "repeat" -> {
+                case "repeat" -> {
                     var baseOfWords = new BaseOfWords();
                     setElementsFromFileToList(baseOfWords.getFilePath());
                 }
@@ -70,12 +67,6 @@ class CoupleOfWords {
         }catch(Exception e){
             e.printStackTrace();
         }
-    }
-    private void help(){
-        System.out.println(yellow + "<finish> to finish the program");
-        System.out.println("<skip> to skip current word");
-        System.out.println("<info> show info" + reset);
-        System.out.println("<base> check ");
     }
     public void setWords(){
         var scanner = new Scanner(System.in);
@@ -97,7 +88,7 @@ class CoupleOfWords {
                     checkWordInBase();
                 }
                 else
-                    list.add(new CoupleOfWords(word, translation));
+                    listOfWordsForLearning.add(new CoupleOfWords(word, translation));
             }
         }catch(Exception e){
             e.printStackTrace();
@@ -132,7 +123,7 @@ class CoupleOfWords {
     public void printInFile() throws IOException {
         var fileWriter = new FileWriter(filePath);
         StringBuilder sb = new StringBuilder();
-        for (var indexOfObject : list) {
+        for (var indexOfObject : listOfWordsForLearning) {
             sb.append(indexOfObject.word).append(" - ").append(indexOfObject.translation).append(System.lineSeparator());
         }
         fileWriter.write(sb.toString());
@@ -151,7 +142,7 @@ class CoupleOfWords {
                 sentence = sentence.replace(word, "");
                 translation = sentence.replace(" - ", "");
 
-                list.add(new CoupleOfWords(validator(word), validator(translation)));
+                listOfWordsForLearning.add(new CoupleOfWords(validator(word), validator(translation)));
             }
         }else{
             System.out.println("This file is empty");
@@ -161,12 +152,12 @@ class CoupleOfWords {
     public void startTraining() {
         var random = new Random();
         Instant start = Instant.now();
-        while(!list.isEmpty()){
-            var coupleOfWords = list.get(random.nextInt(0, list.size()));
+        while(!listOfWordsForLearning.isEmpty()){
+            var coupleOfWords = listOfWordsForLearning.get(random.nextInt(0, listOfWordsForLearning.size()));
             check(coupleOfWords);
         }
         Instant finish = Instant.now();
-        totalTime = totalTimeAndHisType(Duration.between(start, finish));
+        infoOfRunTime = totalTimeAndHisType(Duration.between(start, finish));
     }
     private String totalTimeAndHisType(Duration totalTime){
         if(totalTime.toSeconds() > 120){
@@ -178,49 +169,48 @@ class CoupleOfWords {
         return word + " - " + translation + " | " + counts + "/5 " + " to end with this word";
     }
     private void check(CoupleOfWords coupleOfWords) {
-        var random = new Random();
-        List<String> wordAndTranslation = new ArrayList<>();
-        wordAndTranslation.add(coupleOfWords.word);
-        wordAndTranslation.add(coupleOfWords.translation);
-        int numberOfVariable = random.nextInt(0, wordAndTranslation.size());
-        System.out.println("write translation to word "+ wordAndTranslation.get(numberOfVariable));
-        wordAndTranslation.remove(numberOfVariable);
+        if(Math.random() > 0.5){
+defineTheValueAndStartCheckTranslationFromUser(coupleOfWords.getWord(), coupleOfWords.getTranslation(), coupleOfWords);
+        }else{
+defineTheValueAndStartCheckTranslationFromUser(coupleOfWords.getTranslation(), coupleOfWords.getWord(), coupleOfWords);
+        }
+    }
+    private void defineTheValueAndStartCheckTranslationFromUser(String value, String rightAnswer, CoupleOfWords coupleOfWords){
+        System.out.println("Write translation to word " + value);
         String translationFromUser = scanner.nextLine();
-        checkTranslationFromUser(translationFromUser, coupleOfWords, wordAndTranslation);
+        checkTranslationFromUser(translationFromUser, rightAnswer, coupleOfWords);
     }
     private void info(){
         StringBuilder sb = new StringBuilder();
-        for(var info : list){
+        for(var info : listOfWordsForLearning){
             sb.append(info.getInfoOfObject()).append(System.lineSeparator());
         }
+        String yellow = "\u001B[33m";
         System.out.println(yellow + sb + reset);
     }
-    private final String yellow = "\u001B[33m";
+
     private final String reset = "\u001B[0m";
     public void finishTheTraining(){
         System.out.println("Training is finished");
         System.out.println("You did "+countOfErrors+" errors!");
-        if(totalTime != null){
-            System.out.println("You learned these words in " + totalTime);
+        if(infoOfRunTime != null){
+            System.out.println("You learned these words in " + infoOfRunTime);
         }
         System.exit(0);
     }
-    private void checkTranslationFromUser(String translationFromUser, CoupleOfWords coupleOfWords, List<String> wordAndTranslation){
+    private void checkTranslationFromUser(String translationFromUser, String rightAnswer, CoupleOfWords coupleOfWords){
         switch(translationFromUser){
             case "finish" -> finishTheTraining();
             case "skip" -> {
                 System.out.println("This word was skipped");
-                list.remove(coupleOfWords);
-            }case "help" -> {
-                help();
-                checkTranslationFromUser(scanner.nextLine(), coupleOfWords, wordAndTranslation);
+                listOfWordsForLearning.remove(coupleOfWords);
             }
             case "info" -> {
                 info();
-                checkTranslationFromUser(scanner.nextLine(), coupleOfWords, wordAndTranslation);
+                checkTranslationFromUser(scanner.nextLine(), rightAnswer, coupleOfWords);
             }
             default -> {
-                if(translationFromUser.equals(wordAndTranslation.get(0))){
+                if(translationFromUser.equals(rightAnswer)){
                     String green = "\u001B[32m";
                     coupleOfWords.counts++;
                     System.out.println(green +"True     "+coupleOfWords.counts+"/5"+ reset);
@@ -231,10 +221,10 @@ class CoupleOfWords {
                     countOfErrors++;
                     String red = "\u001B[31m";
                     System.out.println(red+"False!"+ reset);
-                    System.out.println("Write answer was "+wordAndTranslation.get(0));
+                    System.out.println("Write answer was " + rightAnswer);
                 }
                 if(coupleOfWords.counts == 5){
-                    list.remove(coupleOfWords);
+                    listOfWordsForLearning.remove(coupleOfWords);
                     listOfLearnedWords.add(coupleOfWords);
                     System.out.println("You learned this word");
                 }
@@ -244,7 +234,7 @@ class CoupleOfWords {
 }
 class BaseOfWords {
     private final File file = new File(
-            "C:\\Users\\holol\\Desktop\\IdeaProjects\\first\\src\\Training\\TrainingOfWords\\LearnedWords.txt");
+            "C:\\Users\\holol\\Desktop\\IdeaProjects\\first\\src\\Training\\TrainingOfWords\\LearnedWords.txt");    //your own path to file
     public String getFilePath(){
         return file.getPath();
     }
